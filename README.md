@@ -25,14 +25,14 @@ There are **two modes** of running the script:
 Scrapes fresh category list from sitemap and analyzes each one.
 
 ```bash
-node scraper.js
+node scraper_headless.js
 ```
 
 ### 🔁 Retry Mode (failed categories)
 Use this to retry failed URLs from a previous run:
 
 ```bash
-node scraper.js retry
+node scraper_headless.js retry
 ```
 
 ---
@@ -41,13 +41,13 @@ node scraper.js retry
 Enable verbose debug logs:
 
 ```bash
-DEBUG_MODE=true node scraper.js
+DEBUG_MODE=true node scraper_headless.js
 ```
 
 With retry:
 
 ```bash
-DEBUG_MODE=true node scraper.js retry
+DEBUG_MODE=true node scraper_headless.js retry
 ```
 
 ---
