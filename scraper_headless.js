@@ -25,16 +25,18 @@ const startTime = Date.now();
   let categoryUrls = [];
 
   if (mode === 'retry' && fs.existsSync(failedFile)) {
-    DEBUG && console.debug('🔁 Running in retry mode...');
+    console.log('🔁 Running in retry mode...');
     categoryUrls = JSON.parse(fs.readFileSync(failedFile));
   } else {
-    DEBUG && console.debug('📥 Fetching sitemap...');
+    console.log('📥 Fetching sitemap...');
     const res = await fetch(sitemapURL);
     const sitemapText = await res.text();
     categoryUrls = [...sitemapText.matchAll(/<loc>(.*?)<\/loc>/g)].map(m => m[1]);
   }
 
   const totalToProcess = categoryUrls.length;
+  console.log(`Will evaluate : ${totalToProcess} categories`);
+
   let eligibleCategories = 0;
   const successful = fs.existsSync('successful_headless.json') ? JSON.parse(fs.readFileSync('successful_headless.json')) : [];
   const mismatches = fs.existsSync('mismatches_headless.json') ? JSON.parse(fs.readFileSync('mismatches_headless.json')) : [];
@@ -42,7 +44,7 @@ const startTime = Date.now();
   const failed = [];
 
   let processedCount = 0;
-  let nextLogPercent = 5;
+  let nextLogPercent = 1;
 
   const chunks = [];
   for (let i = 0; i < categoryUrls.length; i += CONCURRENCY) {
@@ -128,7 +130,7 @@ const startTime = Date.now();
         }
 
       } catch (err) {
-        DEBUG && console.debug('❌ Error for ' + url + ' ::: ' + err.message);
+        console.error('❌ Error for ' + url + ' ::: ' + err.message);
         failed.push(url);
       } finally {
         await page.close().catch(() => {});
@@ -136,7 +138,12 @@ const startTime = Date.now();
         const progressPercent = Math.floor((processedCount / totalToProcess) * 100);
         if (progressPercent >= nextLogPercent) {
           console.log(`🚀 Progress: ${progressPercent}% complete (${processedCount}/${totalToProcess})`);
-          nextLogPercent += 5;
+          const currTime = Date.now();
+          const durationSec = Math.floor((currTime - startTime) / 1000);
+          const minutes = Math.floor(durationSec / 60);
+          const seconds = durationSec % 60;
+          console.log('Execution Time for '+ progressPercent+'%: ' + (minutes ? `${minutes} min ` : '') + `${seconds} sec`);
+          nextLogPercent += 1;
         }
       }
     });
@@ -150,11 +157,11 @@ const startTime = Date.now();
   fs.writeFileSync(mode === 'retry' ? retryFailedFile : 'failed_headless.json', JSON.stringify(failed, null, 2));
 
   console.log('\n📊 Summary:');
-  console.log(`📦 Total Categories Scanned: ${totalToProcess}`);
-  console.log(`📂 Eligible / Processed Categories: ${eligibleCategories}`);
-  console.log(`✅ Successful: ${successful.length}`);
+  console.log(`Total Categories Scanned: ${totalToProcess}`);
+  console.log(`Eligible / Processed Categories: ${eligibleCategories}`);
+  console.log(`Successful: ${successful.length}`);
   console.log(`⚠️ Mismatches: ${mismatches.length}`);
-  console.log(`📭 No Product List: ${noProductList.length}`);
+  console.log(`No Product List: ${noProductList.length}`);
   console.log(`❌ Failed: ${failed.length}`);
 
   const endTime = Date.now();
