@@ -67,7 +67,7 @@ After execution, these files are generated in the root folder:
 
 ## ⏱️ Progress and Summary
 
-- Progress updates every 5% of total work
+- Progress updates every 1% of total work
 - Final summary includes:
   - Total scanned URLs
   - Eligible product category pages
